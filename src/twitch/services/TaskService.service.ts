@@ -67,4 +67,12 @@ export class TaskService {
       newTask.status = 'en progreso';
     }
   }
+
+  resetPreviousTask(user: string): void {
+    this.tasks.forEach((task) => {
+      if (task.user === user && task.status === 'en progreso') {
+        task.status = 'pendiente';
+      }
+    });
+  }
 }

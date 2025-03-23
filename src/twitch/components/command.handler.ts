@@ -39,6 +39,7 @@ export class CommandHandler {
       '!finish': () => this.finishTaskCommand(username),
       '!finalizar': () => this.finishTaskCommand(username),
       '!completado': () => this.finishTaskCommand(username),
+      '!acabe': () => this.finishTaskCommand(username),
 
       '!comandos': () => this.getUserCommands(),
       '!help': () => this.getUserCommands(),
@@ -94,6 +95,10 @@ export class CommandHandler {
 
     if (match) {
       const taskId = parseInt(match[1], 10);
+
+      // 🛑 Antes de cambiar, aseguramos que la tarea anterior vuelva a 'pendiente'
+      this.taskService.resetPreviousTask(user);
+
       const task = this.taskService.updateTaskStatus(
         user,
         taskId,
@@ -103,6 +108,9 @@ export class CommandHandler {
         ? `⏳ Tarea #${taskId} ahora está en progreso.`
         : '⚠️ Esa tarea no está en tu listado.';
     } else {
+      // 🛑 Antes de crear una nueva tarea en progreso, reseteamos la anterior
+      this.taskService.resetPreviousTask(user);
+
       const newTask = this.taskService.addTask(user, text, 'en progreso');
       return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
     }
