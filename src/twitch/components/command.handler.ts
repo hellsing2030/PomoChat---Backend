@@ -4,7 +4,7 @@ import { TaskService } from '../services/TaskService.service';
 
 @Injectable()
 export class CommandHandler {
-  private botEnabled = true; // Estado del bot
+  private botEnabled = true;
 
   constructor(private readonly taskService: TaskService) {}
 
@@ -12,48 +12,40 @@ export class CommandHandler {
     const args = message.split(' ');
     const command = args.shift()?.toLowerCase();
     const username = tags['display-name'];
-    const isMod = tags.mod || tags.badges?.broadcaster; // Verifica si es streamer o mod
+    const isMod = tags.mod || tags.badges?.broadcaster;
     console.log(isMod);
 
-    // Si el bot está apagado, ignora todos los comandos excepto "!onbot"
     if (!this.botEnabled && command !== '!onbot') return;
 
-    // Definir comandos generales
     const commands = {
-      // Saludo
       '!hola': () => `¡Hola, ${username}! 👋`,
 
-      // Agregar tarea
       '!addtask': () => this.addTaskCommand(username, args),
       '!agregartarea': () => this.addTaskCommand(username, args),
       '!agregar': () => this.addTaskCommand(username, args),
       '!add': () => this.addTaskCommand(username, args),
 
-      // Ver tareas
       '!tasks': () => this.showTasksCommand(username),
       '!tareas': () => this.showTasksCommand(username),
       '!list': () => this.showTasksCommand(username),
       '!mis-tareas': () => this.showTasksCommand(username),
 
-      // Cambiar tarea en progreso o crear nueva
       '!estoy': () => this.changeTaskStatusCommand(username, args),
       '!esta': () => this.changeTaskStatusCommand(username, args),
       '!workingon': () => this.changeTaskStatusCommand(username, args),
       '!trabajando': () => this.changeTaskStatusCommand(username, args),
 
-      // Finalizar tarea en progreso
       '!done': () => this.finishTaskCommand(username),
       '!finish': () => this.finishTaskCommand(username),
       '!finalizar': () => this.finishTaskCommand(username),
       '!completado': () => this.finishTaskCommand(username),
+      '!acabe': () => this.finishTaskCommand(username),
 
-      // Mostrar comandos disponibles
       '!comandos': () => this.getUserCommands(),
       '!help': () => this.getUserCommands(),
       '!ayuda': () => this.getUserCommands(),
     };
 
-    // Comandos exclusivos para el streamer y moderadores
     if (isMod) {
       commands['!onbot'] = () => {
         this.botEnabled = true;
@@ -66,7 +58,6 @@ export class CommandHandler {
       commands['!admincomandos'] = () => this.getAdminCommands();
     }
 
-    // Ejecutar el comando si existe
     if (commands[command]) {
       const response = await commands[command]();
       if (response) {
@@ -75,7 +66,6 @@ export class CommandHandler {
     }
   }
 
-  // Agregar una tarea
   private addTaskCommand(user: string, args: string[]): string {
     const description = args.join(' ').trim();
     if (!description)
@@ -84,7 +74,6 @@ export class CommandHandler {
     return `✅ Tarea #${task.id} añadida: ${description}`;
   }
 
-  // Mostrar las tareas del usuario
   private showTasksCommand(user: string): string {
     const tasks = this.taskService.getTasks(user);
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
@@ -99,7 +88,6 @@ export class CommandHandler {
     );
   }
 
-  // Cambiar el estado de una tarea
   private changeTaskStatusCommand(user: string, args: string[]): string {
     const text = args.join(' ').trim();
     const taskRegex = /^tarea(\d+)$/i;
@@ -107,6 +95,10 @@ export class CommandHandler {
 
     if (match) {
       const taskId = parseInt(match[1], 10);
+
+      // 🛑 Antes de cambiar, aseguramos que la tarea anterior vuelva a 'pendiente'
+      this.taskService.resetPreviousTask(user);
+
       const task = this.taskService.updateTaskStatus(
         user,
         taskId,
@@ -116,12 +108,14 @@ export class CommandHandler {
         ? `⏳ Tarea #${taskId} ahora está en progreso.`
         : '⚠️ Esa tarea no está en tu listado.';
     } else {
+      // 🛑 Antes de crear una nueva tarea en progreso, reseteamos la anterior
+      this.taskService.resetPreviousTask(user);
+
       const newTask = this.taskService.addTask(user, text, 'en progreso');
       return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
     }
   }
 
-  // Finalizar la tarea en progreso
   private finishTaskCommand(user: string): string {
     const finishedTask = this.taskService.finishCurrentTask(user);
     return finishedTask
@@ -129,7 +123,6 @@ export class CommandHandler {
       : '⚠️ No tienes ninguna tarea en progreso.';
   }
 
-  // Comandos disponibles para todos los usuarios
   private getUserCommands(): string {
     return `
     📜 **Comandos Disponibles**  
@@ -141,7 +134,6 @@ export class CommandHandler {
     `;
   }
 
-  // Comandos disponibles solo para el streamer y moderadores
   private getAdminCommands(): string {
     return `
     🔧 **Comandos de Administración**  
