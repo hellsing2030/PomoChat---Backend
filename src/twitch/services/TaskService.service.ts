@@ -17,10 +17,6 @@ export class TaskService {
     description: string,
     status: 'pendiente' | 'en progreso' = 'pendiente',
   ): Task {
-    if (!description.trim()) {
-      throw new Error('⚠️ La tarea no puede estar vacía.');
-    }
-
     if (!this.userTaskCounters[user]) {
       this.userTaskCounters[user] = 1;
     }
@@ -74,6 +70,7 @@ export class TaskService {
   }
 
   deleteFinishedTasks(user: string): void {
+    console.log(user, this.tasks);
     this.tasks = this.tasks.filter(
       (task) => task.user !== user || task.status !== 'finalizada',
     );
