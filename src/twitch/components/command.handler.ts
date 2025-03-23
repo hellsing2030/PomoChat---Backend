@@ -13,55 +13,56 @@ export class CommandHandler {
     const command = args.shift()?.toLowerCase();
     const username = tags['display-name'];
     const isMod = tags.mod || tags.badges?.broadcaster;
-    console.log(isMod);
 
     if (!this.botEnabled && command !== '!onbot') return;
 
-    const commands = {
-      '!hola': () => `¡Hola, ${username}! 👋`,
-
-      '!addtask': () => this.addTaskCommand(username, args),
-      '!agregartarea': () => this.addTaskCommand(username, args),
-      '!agregar': () => this.addTaskCommand(username, args),
-      '!add': () => this.addTaskCommand(username, args),
-
-      '!tasks': () => this.showTasksCommand(username),
-      '!tareas': () => this.showTasksCommand(username),
-      '!list': () => this.showTasksCommand(username),
-      '!mis-tareas': () => this.showTasksCommand(username),
-
-      '!estoy': () => this.changeTaskStatusCommand(username, args),
-      '!esta': () => this.changeTaskStatusCommand(username, args),
-      '!workingon': () => this.changeTaskStatusCommand(username, args),
-      '!trabajando': () => this.changeTaskStatusCommand(username, args),
-
-      '!done': () => this.finishTaskCommand(username),
-      '!finish': () => this.finishTaskCommand(username),
-      '!finalizar': () => this.finishTaskCommand(username),
-      '!completado': () => this.finishTaskCommand(username),
-      '!acabe': () => this.finishTaskCommand(username),
-
-      '!comandos': () => this.getUserCommands(),
-      '!help': () => this.getUserCommands(),
-      '!ayuda': () => this.getUserCommands(),
-    };
+    const commandMap = new Map<string, () => string | Promise<string>>([
+      [['!hola', '!hi'].join(), () => `¡Hola, ${username}! 👋`],
+      [
+        ['!addtask', '!agregartarea', '!agregar', '!add'].join(),
+        () => this.addTaskCommand(username, args),
+      ],
+      [
+        ['!tasks', '!tareas', '!list', '!mis-tareas'].join(),
+        () => this.showTasksCommand(username),
+      ],
+      [
+        ['!estoy', '!esta', '!workingon', '!trabajando'].join(),
+        () => this.changeTaskStatusCommand(username, args),
+      ],
+      [
+        ['!done', '!finish', '!finalizar', '!completado', '!acabe'].join(),
+        () => this.finishTaskCommand(username),
+      ],
+      [
+        ['!borrartareas', '!deletetask', '!dtask', 'btarea'].join(),
+        () => this.deleteFinishedTasksCommand(username),
+      ],
+      [['!borrartarea'].join(), () => this.deleteTaskCommand(username, args)],
+      [
+        ['!comandos', '!help', '!ayuda', '!aiuda'].join(),
+        () => this.getUserCommands(),
+      ],
+    ]);
 
     if (isMod) {
-      commands['!onbot'] = () => {
+      commandMap.set('!onbot', () => {
         this.botEnabled = true;
         return '✅ Bot encendido.';
-      };
-      commands['!offbot'] = () => {
+      });
+      commandMap.set('!offbot', () => {
         this.botEnabled = false;
         return '🛑 Bot apagado.';
-      };
-      commands['!admincomandos'] = () => this.getAdminCommands();
+      });
     }
 
-    if (commands[command]) {
-      const response = await commands[command]();
-      if (response) {
-        client.say(channel, response);
+    for (const [keys, func] of commandMap.entries()) {
+      if (keys.split(',').includes(command)) {
+        const response = await func();
+        if (response) {
+          client.say(channel, response);
+        }
+        break;
       }
     }
   }
@@ -78,7 +79,8 @@ export class CommandHandler {
     const tasks = this.taskService.getTasks(user);
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
     return (
-      `📋 **Tus tareas:**\n` +
+      `📋 **Tus tareas:**
+` +
       tasks
         .map(
           (t) =>
@@ -93,27 +95,16 @@ export class CommandHandler {
     const taskRegex = /^tarea(\d+)$/i;
     const match = text.match(taskRegex);
 
-    if (match) {
-      const taskId = parseInt(match[1], 10);
+    if (!match)
+      return '⚠️ Debes indicar una tarea válida, por ejemplo: !estoy tarea1';
 
-      // 🛑 Antes de cambiar, aseguramos que la tarea anterior vuelva a 'pendiente'
-      this.taskService.resetPreviousTask(user);
+    const taskId = parseInt(match[1], 10);
+    this.taskService.resetPreviousTask(user);
+    const task = this.taskService.updateTaskStatus(user, taskId, 'en progreso');
 
-      const task = this.taskService.updateTaskStatus(
-        user,
-        taskId,
-        'en progreso',
-      );
-      return task
-        ? `⏳ Tarea #${taskId} ahora está en progreso.`
-        : '⚠️ Esa tarea no está en tu listado.';
-    } else {
-      // 🛑 Antes de crear una nueva tarea en progreso, reseteamos la anterior
-      this.taskService.resetPreviousTask(user);
-
-      const newTask = this.taskService.addTask(user, text, 'en progreso');
-      return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
-    }
+    return task
+      ? `⏳ Tarea #${taskId} ahora está en progreso.`
+      : '⚠️ Esa tarea no está en tu listado.';
   }
 
   private finishTaskCommand(user: string): string {
@@ -123,23 +114,31 @@ export class CommandHandler {
       : '⚠️ No tienes ninguna tarea en progreso.';
   }
 
+  private deleteFinishedTasksCommand(user: string): string {
+    this.taskService.deleteFinishedTasks(user);
+    return '🗑️ Se han eliminado todas las tareas finalizadas.';
+  }
+
+  private deleteTaskCommand(user: string, args: string[]): string {
+    const taskId = parseInt(args[0], 10);
+    if (isNaN(taskId))
+      return '⚠️ Debes proporcionar un número de tarea válido.';
+    return this.taskService.deleteTask(user, taskId)
+      ? `🗑️ Tarea #${taskId} eliminada.`
+      : '⚠️ No se encontró la tarea.';
+  }
+
   private getUserCommands(): string {
     return `
     📜 **Comandos Disponibles**  
     - **!hola** → Saludo del bot  
-    - **!addtask / !agregartarea [tarea]** → Agrega una nueva tarea  
-    - **!tasks / !tareas** → Muestra tus tareas  
-    - **!estoy / !esta tarea[num]** → Pone una tarea en progreso  
+    - **!addtask [tarea]** → Agrega una nueva tarea  
+    - **!tasks** → Muestra tus tareas  
+    - **!estoy tarea[num]** → Pone una tarea en progreso  
     - **!done** → Finaliza la tarea en progreso  
-    `;
-  }
-
-  private getAdminCommands(): string {
-    return `
-    🔧 **Comandos de Administración**  
-    - **!onbot** → Activa el bot  
-    - **!offbot** → Desactiva el bot  
-    - **!admincomandos** → Muestra estos comandos  
+    - **!borrartareas** → Elimina todas las tareas finalizadas  
+    - **!borrartarea [id]** → Elimina una tarea específica 
+    - ** 
     `;
   }
 }
