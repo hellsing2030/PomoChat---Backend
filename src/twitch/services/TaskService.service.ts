@@ -10,14 +10,27 @@ interface Task {
 @Injectable()
 export class TaskService {
   private tasks: Task[] = [];
-  private taskCounter = 1;
+  private userTaskCounters: Record<string, number> = {};
 
   addTask(
     user: string,
     description: string,
     status: 'pendiente' | 'en progreso' = 'pendiente',
   ): Task {
-    const task: Task = { id: this.taskCounter++, user, description, status };
+    if (!description.trim()) {
+      throw new Error('⚠️ La tarea no puede estar vacía.');
+    }
+
+    if (!this.userTaskCounters[user]) {
+      this.userTaskCounters[user] = 1;
+    }
+
+    const task: Task = {
+      id: this.userTaskCounters[user]++,
+      user,
+      description,
+      status,
+    };
     this.tasks.push(task);
     return task;
   }
@@ -52,27 +65,25 @@ export class TaskService {
     return null;
   }
 
-  setNewTaskInProgress(user: string, newTaskId: number) {
-    const currentTask = this.tasks.find(
-      (task) => task.user === user && task.status === 'en progreso',
-    );
-    if (currentTask) {
-      currentTask.status = 'pendiente';
-    }
-
-    const newTask = this.tasks.find(
-      (task) => task.user === user && task.id === newTaskId,
-    );
-    if (newTask && newTask.status !== 'finalizada') {
-      newTask.status = 'en progreso';
-    }
-  }
-
   resetPreviousTask(user: string): void {
     this.tasks.forEach((task) => {
       if (task.user === user && task.status === 'en progreso') {
         task.status = 'pendiente';
       }
     });
+  }
+
+  deleteFinishedTasks(user: string): void {
+    this.tasks = this.tasks.filter(
+      (task) => task.user !== user || task.status !== 'finalizada',
+    );
+  }
+
+  deleteTask(user: string, taskId: number): boolean {
+    const initialLength = this.tasks.length;
+    this.tasks = this.tasks.filter(
+      (task) => !(task.user === user && task.id === taskId),
+    );
+    return this.tasks.length < initialLength;
   }
 }

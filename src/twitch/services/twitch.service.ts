@@ -11,8 +11,10 @@ export class TwitchService implements OnModuleInit {
   onModuleInit() {
     this.connectToTwitch();
   }
-
   private connectToTwitch() {
+    const channels = process.env.CHANNELS
+      ? process.env.CHANNELS.split(',')
+      : [];
     const options = {
       options: { debug: true },
       connection: { reconnect: true, secure: true },
@@ -20,7 +22,7 @@ export class TwitchService implements OnModuleInit {
         username: 'hellsing2030bot',
         password: `${process.env.TOKEN}`,
       },
-      channels: ['hellsing2030_'],
+      channels: channels,
     };
 
     this.client = new tmi.Client(options);
