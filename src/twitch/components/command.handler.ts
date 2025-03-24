@@ -35,10 +35,13 @@ export class CommandHandler {
         () => this.finishTaskCommand(username),
       ],
       [
-        ['!borrartareas', '!deletetask', '!dtask', 'btarea'].join(),
+        ['!borrartareas', '!tasksdelete', '!dtask', 'btarea'].join(),
         () => this.deleteFinishedTasksCommand(username),
       ],
-      [['!borrartarea'].join(), () => this.deleteTaskCommand(username, args)],
+      [
+        ['!borrartarea', '!taskdelete'].join(),
+        () => this.deleteTaskCommand(username, args),
+      ],
       [
         ['!comandos', '!help', '!ayuda', '!aiuda'].join(),
         () => this.getUserCommands(),
@@ -95,16 +98,25 @@ export class CommandHandler {
     const taskRegex = /^tarea(\d+)$/i;
     const match = text.match(taskRegex);
 
-    if (!match)
-      return '⚠️ Debes indicar una tarea válida, por ejemplo: !estoy tarea1';
+    if (match) {
+      const taskId = parseInt(match[1], 10);
 
-    const taskId = parseInt(match[1], 10);
-    this.taskService.resetPreviousTask(user);
-    const task = this.taskService.updateTaskStatus(user, taskId, 'en progreso');
+      this.taskService.resetPreviousTask(user);
 
-    return task
-      ? `⏳ Tarea #${taskId} ahora está en progreso.`
-      : '⚠️ Esa tarea no está en tu listado.';
+      const task = this.taskService.updateTaskStatus(
+        user,
+        taskId,
+        'en progreso',
+      );
+      return task
+        ? `⏳ Tarea #${taskId} ahora está en progreso.`
+        : '⚠️ Esa tarea no está en tu listado.';
+    } else {
+      this.taskService.resetPreviousTask(user);
+      if (!text.trim()) return '⚠️ La tarea no puede estar vacía.';
+      const newTask = this.taskService.addTask(user, text, 'en progreso');
+      return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
+    }
   }
 
   private finishTaskCommand(user: string): string {
@@ -130,15 +142,14 @@ export class CommandHandler {
 
   private getUserCommands(): string {
     return `
-    📜 **Comandos Disponibles**  
-    - **!hola** → Saludo del bot  
-    - **!addtask [tarea]** → Agrega una nueva tarea  
-    - **!tasks** → Muestra tus tareas  
-    - **!estoy tarea[num]** → Pone una tarea en progreso  
-    - **!done** → Finaliza la tarea en progreso  
-    - **!borrartareas** → Elimina todas las tareas finalizadas  
-    - **!borrartarea [id]** → Elimina una tarea específica 
-    - ** 
-    `;
+📜 **Comandos Disponibles**
+🔹 **!hola, !hi** → Saludo del bot
+🔹 **!addtask, !agregartarea, !agregar, !add [tarea]** → Agrega una nueva tarea
+🔹 **!tasks, !tareas, !list, !mis-tareas** → Muestra tus tareas
+🔹 **!estoy, !esta, !workingon, !trabajando tarea[num]** → Pone una tarea en progreso 
+🔹 **!done, !finish, !finalizar, !completado, !acabe** → Finaliza la tarea en progreso
+🔹 **!borrartareas, !tasksdelete, !dtask, !btarea** → Elimina todas las tareas finalizadas
+🔹 **!borrartarea, !taskdelete [id]** → Elimina una tarea específica
+🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos`;
   }
 }
