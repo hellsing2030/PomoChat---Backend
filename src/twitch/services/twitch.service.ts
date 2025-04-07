@@ -29,7 +29,12 @@ export class TwitchService implements OnModuleInit {
 
     this.client.on('message', (channel, tags, message, self) => {
       if (self) return;
-      this.commandHandler.handleCommand(this.client, channel, tags, message);
+      return this.commandHandler.handleCommand(
+        this.client,
+        channel,
+        tags,
+        message,
+      );
     });
 
     this.client
