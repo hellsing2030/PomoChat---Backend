@@ -6,7 +6,7 @@ export type TaskDocument = Task & Document;
 @Schema()
 export class Task extends Document {
   @Prop({ required: true, unique: true })
-  id: number;
+  id_tasks: number;
 
   @Prop({ required: true })
   user: string;

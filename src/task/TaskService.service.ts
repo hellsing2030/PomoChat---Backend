@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task, TaskDocument } from 'src/twitch/schema/tasks.schema';
 
 interface TaskProps {
-  id: number;
+  id_tasks: number;
   user: string;
   description: string;
   status: 'pendiente' | 'en progreso' | 'finalizada';
@@ -19,12 +19,20 @@ export class TaskService {
     description: string,
     status: string = 'pendiente',
   ): Promise<Task> {
+    const lastTask = await this.taskModel
+      .findOne({ user })
+      .sort({ id_tasks: -1 })
+      .exec();
+
+    const nextId = lastTask ? lastTask.id_tasks + 1 : 0;
+
     const newTask = new this.taskModel({
-      id: new mongoose.Types.ObjectId().toHexString(),
+      id_tasks: nextId,
       user,
       description,
       status,
     });
+
     return newTask.save();
   }
 

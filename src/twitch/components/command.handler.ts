@@ -74,11 +74,12 @@ export class CommandHandler {
     if (!description)
       return '⚠️ Debes proporcionar una descripción para la tarea.';
     const task = await this.taskService.addTask(user, description);
-    return `✅ Tarea #${task.id} añadida: ${description}`;
+    return `✅ Tarea #${task.id_tasks} añadida: ${description}`;
   }
 
   private async showTasksCommand(user: string): Promise<string> {
     const tasks = await this.taskService.getTasks(user);
+    console.log({ tasks });
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
     return (
       `📋 **Tus tareas:**
@@ -86,7 +87,7 @@ export class CommandHandler {
       tasks
         .map(
           (t) =>
-            `${t.status === 'pendiente' ? '[ ]' : t.status === 'en progreso' ? '[~]' : '[✔]'} #${t.id}: ${t.description}`,
+            `${t.status === 'pendiente' ? '[ ]' : t.status === 'en progreso' ? '[~]' : '[✔]'} #${t.id_tasks}: ${t.description}`,
         )
         .join('\n')
     );
@@ -124,7 +125,7 @@ export class CommandHandler {
   private async finishTaskCommand(user: string): Promise<string> {
     const finishedTask = await this.taskService.finishCurrentTask(user);
     return finishedTask
-      ? `✔️ Tarea #${finishedTask.id} finalizada: ${finishedTask.description}`
+      ? `✔️ Tarea #${finishedTask.id_tasks} finalizada: ${finishedTask.description}`
       : '⚠️ No tienes ninguna tarea en progreso.';
   }
 

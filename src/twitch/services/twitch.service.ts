@@ -19,7 +19,7 @@ export class TwitchService implements OnModuleInit {
       options: { debug: true },
       connection: { reconnect: true, secure: true },
       identity: {
-        username: 'hellsing2030bot',
+        username: `${process.env.USER_BOT_NAME}`,
         password: `${process.env.TOKEN}`,
       },
       channels: channels,
