@@ -46,6 +46,14 @@ export class CommandHandler {
         ['!comandos', '!help', '!ayuda', '!aiuda'].join(),
         () => this.getUserCommands(),
       ],
+      [
+        ['!chiste', '!chistes', 'jaja', '!risitas'].join(),
+        () => this.jajaupulus(username, args),
+      ],
+      [
+        ['!creadorDeRisas', '!creadorderisas', '!creadorderisas'].join(),
+        () => `Creador del bot de risas @Raupulus`,
+      ],
     ]);
 
     if (isMod) {
@@ -82,8 +90,7 @@ export class CommandHandler {
     const tasks = this.taskService.getTasks(user);
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
     return (
-      `📋 **Tus tareas:**
-` +
+      `📋 **Tus tareas:**` +
       tasks
         .map(
           (t) =>
@@ -140,6 +147,43 @@ export class CommandHandler {
       : '⚠️ No se encontró la tarea.';
   }
 
+  private async jajaupulus(user: string, args: string[]): Promise<string> {
+    const keyType = {
+      dev: 'chistes-devs',
+      lepe: 'chistes-lepe',
+    };
+
+    const group_slug = keyType[args[0]];
+    const url =
+      args.length === 0
+        ? `${process.env.URL_RAUPULUS}/api/v1/type/chistes/content/random`
+        : `${process.env.URL_RAUPULUS}/api/v1/group/${group_slug}/content/random`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${process.env.TOKEN_CHISTES}`,
+        },
+      });
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        console.error(`Error ${response.status}:`, text);
+        throw new Error('HTTP error');
+      }
+
+      const data = JSON.parse(text);
+      return data.data[0].content;
+    } catch (error) {
+      console.error('❌ Error:', error);
+      return 'Pegenle al creador porque su bot no funciona';
+    }
+  }
+
   private getUserCommands(): string {
     return `
 📜 **Comandos Disponibles**
@@ -150,6 +194,7 @@ export class CommandHandler {
 🔹 **!done, !finish, !finalizar, !completado, !acabe** → Finaliza la tarea en progreso
 🔹 **!borrartareas, !tasksdelete, !dtask, !btarea** → Elimina todas las tareas finalizadas
 🔹 **!borrartarea, !taskdelete [id]** → Elimina una tarea específica
-🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos`;
+🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos
+🔹 **'!chiste', '!chistes', 'jaja', '!risitas'→ Bot de risas`;
   }
 }
