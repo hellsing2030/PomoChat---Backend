@@ -27,7 +27,7 @@ export class CommandHandler {
         () => this.showTasksCommand(username),
       ],
       [
-        ['!estoy', '!esta', '!workingon', '!trabajando'].join(),
+        ['!estoy', '!esta', '!está', '!workingon', '!trabajando'].join(),
         () => this.changeTaskStatusCommand(username, args),
       ],
       [
@@ -54,6 +54,16 @@ export class CommandHandler {
         ['!creadorDeRisas', '!creadorderisas', '!creadorderisas'].join(),
         () => `Creador del bot de risas @Raupulus`,
       ],
+      [
+        ['!comer'].join(),
+        () =>
+          `ñam ñam ñam, **imaginate a tanuki virtual comiendo** ${this.getRandomSymbol()}`,
+      ],
+      [
+        ['!dia'].join(),
+        () =>
+          `Extendido Día 16, entonces que procede... nota del bot(este es mi proposito ?) ${this.getRandomSymbol()}`,
+      ],
     ]);
 
     if (isMod) {
@@ -78,6 +88,27 @@ export class CommandHandler {
     }
   }
 
+  private getRandomSymbol(): string {
+    const symbols = [
+      '✨',
+      '🔥',
+      '🎉',
+      '😎',
+      '🍀',
+      '🌟',
+      '💡',
+      '🦊',
+      '🐱‍👤',
+      '🦄',
+      '🍕',
+      '🥑',
+      '🧩',
+      '🎲',
+      '🚀',
+    ];
+    const idx = Math.floor(Math.random() * symbols.length);
+    return symbols[idx];
+  }
   private addTaskCommand(user: string, args: string[]): string {
     const description = args.join(' ').trim();
     if (!description)
