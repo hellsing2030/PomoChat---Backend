@@ -27,7 +27,7 @@ export class CommandHandler {
         () => this.showTasksCommand(username),
       ],
       [
-        ['!estoy', '!esta', '!workingon', '!trabajando'].join(),
+        ['!estoy', '!esta', '!está', '!workingon', '!trabajando'].join(),
         () => this.changeTaskStatusCommand(username, args),
       ],
       [
@@ -46,6 +46,24 @@ export class CommandHandler {
         ['!comandos', '!help', '!ayuda', '!aiuda'].join(),
         () => this.getUserCommands(),
       ],
+      [
+        ['!chiste', '!chistes', 'jaja', '!risitas'].join(),
+        () => this.jajaupulus(username, args),
+      ],
+      [
+        ['!creadorDeRisas', '!creadorderisas', '!creadorderisas'].join(),
+        () => `Creador del bot de risas @Raupulus`,
+      ],
+      [
+        ['!comer'].join(),
+        () =>
+          `ñam ñam ñam, **imaginate a tanuki virtual comiendo** ${this.getRandomSymbol()}`,
+      ],
+      [
+        ['!dia'].join(),
+        () =>
+          `Extendido Día 16, entonces que procede... nota del bot(este es mi proposito ?) ${this.getRandomSymbol()}`,
+      ],
     ]);
 
     if (isMod) {
@@ -63,11 +81,32 @@ export class CommandHandler {
       if (keys.split(',').includes(command)) {
         const response = await func();
         if (response) {
-          client.say(channel, `local: ${response}`);
+          client.say(channel, response);
         }
         break;
       }
     }
+  }
+  private getRandomSymbol(): string {
+    const symbols = [
+      '✨',
+      '🔥',
+      '🎉',
+      '😎',
+      '🍀',
+      '🌟',
+      '💡',
+      '🦊',
+      '🐱‍👤',
+      '🦄',
+      '🍕',
+      '🥑',
+      '🧩',
+      '🎲',
+      '🚀',
+    ];
+    const idx = Math.floor(Math.random() * symbols.length);
+    return symbols[idx];
   }
   private async addTaskCommand(user: string, args: string[]): Promise<string> {
     const description = args.join(' ').trim();
@@ -82,8 +121,7 @@ export class CommandHandler {
     console.log({ tasks });
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
     return (
-      `📋 **Tus tareas:**
-` +
+      `📋 **Tus tareas:**` +
       tasks
         .map(
           (t) =>
@@ -118,7 +156,7 @@ export class CommandHandler {
       await this.taskService.resetPreviousTask(user);
       if (!text.trim()) return '⚠️ La tarea no puede estar vacía.';
       const newTask = await this.taskService.addTask(user, text, 'en progreso');
-      return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
+      return `✅ Nueva tarea en progreso: #${newTask.id_tasks} - ${text}`;
     }
   }
 
@@ -147,6 +185,43 @@ export class CommandHandler {
       : '⚠️ No se encontró la tarea.';
   }
 
+  private async jajaupulus(user: string, args: string[]): Promise<string> {
+    const keyType = {
+      dev: 'chistes-devs',
+      lepe: 'chistes-lepe',
+    };
+
+    const group_slug = keyType[args[0]];
+    const url =
+      args.length === 0
+        ? `${process.env.URL_RAUPULUS}/api/v1/type/chistes/content/random`
+        : `${process.env.URL_RAUPULUS}/api/v1/group/${group_slug}/content/random`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${process.env.TOKEN_CHISTES}`,
+        },
+      });
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        console.error(`Error ${response.status}:`, text);
+        throw new Error('HTTP error');
+      }
+
+      const data = JSON.parse(text);
+      return data.data[0].content;
+    } catch (error) {
+      console.error('❌ Error:', error);
+      return 'Pegenle al creador porque su bot no funciona';
+    }
+  }
+
   private getUserCommands(): string {
     return `
 📜 **Comandos Disponibles**
@@ -157,6 +232,7 @@ export class CommandHandler {
 🔹 **!done, !finish, !finalizar, !completado, !acabe** → Finaliza la tarea en progreso
 🔹 **!borrartareas, !tasksdelete, !dtask, !btarea** → Elimina todas las tareas finalizadas
 🔹 **!borrartarea, !taskdelete [id]** → Elimina una tarea específica
-🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos`;
+🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos
+🔹 **'!chiste', '!chistes', 'jaja', '!risitas'→ Bot de risas`;
   }
 }

@@ -11,6 +11,7 @@ export class TwitchService implements OnModuleInit {
   onModuleInit() {
     this.connectToTwitch();
   }
+
   private connectToTwitch() {
     const channels = process.env.CHANNELS
       ? process.env.CHANNELS.split(',')
@@ -39,7 +40,13 @@ export class TwitchService implements OnModuleInit {
 
     this.client
       .connect()
-      .then(() => console.log('Conectado a Twitch Chat'))
+      .then(
+        () => console.log('Conectado a Twitch Chat'),
+        this.client.on('', (channels) => {
+          console.log(channels);
+          this.client.say(channels, 'test');
+        }),
+      )
       .catch((error) => console.error('Error al conectar con Twitch:', error));
   }
 }
