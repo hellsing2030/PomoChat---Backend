@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TwitchModule } from './twitch/twitch.module';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [ConfigModule.forRoot(), TwitchModule],
+  imports: [
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGO_URL),
+    TwitchModule,
+  ],
   controllers: [],
   providers: [],
 })

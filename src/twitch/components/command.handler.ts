@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { TaskService } from 'src/task/TaskService.service';
 import { Client } from 'tmi.js';
-import { TaskService } from '../services/TaskService.service';
 
 @Injectable()
 export class CommandHandler {
@@ -87,7 +87,6 @@ export class CommandHandler {
       }
     }
   }
-
   private getRandomSymbol(): string {
     const symbols = [
       '✨',
@@ -109,39 +108,43 @@ export class CommandHandler {
     const idx = Math.floor(Math.random() * symbols.length);
     return symbols[idx];
   }
-  private addTaskCommand(user: string, args: string[]): string {
+  private async addTaskCommand(user: string, args: string[]): Promise<string> {
     const description = args.join(' ').trim();
     if (!description)
       return '⚠️ Debes proporcionar una descripción para la tarea.';
-    const task = this.taskService.addTask(user, description);
-    return `✅ Tarea #${task.id} añadida: ${description}`;
+    const task = await this.taskService.addTask(user, description);
+    return `✅ Tarea #${task.id_tasks} añadida: ${description}`;
   }
 
-  private showTasksCommand(user: string): string {
-    const tasks = this.taskService.getTasks(user);
+  private async showTasksCommand(user: string): Promise<string> {
+    const tasks = await this.taskService.getTasks(user);
+    console.log({ tasks });
     if (tasks.length === 0) return '📌 No tienes tareas pendientes.';
     return (
       `📋 **Tus tareas:**` +
       tasks
         .map(
           (t) =>
-            `${t.status === 'pendiente' ? '[ ]' : t.status === 'en progreso' ? '[~]' : '[✔]'} #${t.id}: ${t.description}`,
+            `${t.status === 'pendiente' ? '[ ]' : t.status === 'en progreso' ? '[~]' : '[✔]'} #${t.id_tasks}: ${t.description}`,
         )
         .join('\n')
     );
   }
 
-  private changeTaskStatusCommand(user: string, args: string[]): string {
+  private async changeTaskStatusCommand(
+    user: string,
+    args: string[],
+  ): Promise<string> {
     const text = args.join(' ').trim();
     const taskRegex = /^tarea(\d+)$/i;
     const match = text.match(taskRegex);
 
     if (match) {
-      const taskId = parseInt(match[1], 10);
+      const taskId = args[0];
 
-      this.taskService.resetPreviousTask(user);
+      await this.taskService.resetPreviousTask(user);
 
-      const task = this.taskService.updateTaskStatus(
+      const task = await this.taskService.updateTaskStatus(
         user,
         taskId,
         'en progreso',
@@ -150,30 +153,34 @@ export class CommandHandler {
         ? `⏳ Tarea #${taskId} ahora está en progreso.`
         : '⚠️ Esa tarea no está en tu listado.';
     } else {
-      this.taskService.resetPreviousTask(user);
+      await this.taskService.resetPreviousTask(user);
       if (!text.trim()) return '⚠️ La tarea no puede estar vacía.';
-      const newTask = this.taskService.addTask(user, text, 'en progreso');
-      return `✅ Nueva tarea en progreso: #${newTask.id} - ${text}`;
+      const newTask = await this.taskService.addTask(user, text, 'en progreso');
+      return `✅ Nueva tarea en progreso: #${newTask.id_tasks} - ${text}`;
     }
   }
 
-  private finishTaskCommand(user: string): string {
-    const finishedTask = this.taskService.finishCurrentTask(user);
+  private async finishTaskCommand(user: string): Promise<string> {
+    const finishedTask = await this.taskService.finishCurrentTask(user);
     return finishedTask
-      ? `✔️ Tarea #${finishedTask.id} finalizada: ${finishedTask.description}`
+      ? `✔️ Tarea #${finishedTask.id_tasks} finalizada: ${finishedTask.description}`
       : '⚠️ No tienes ninguna tarea en progreso.';
   }
 
-  private deleteFinishedTasksCommand(user: string): string {
-    this.taskService.deleteFinishedTasks(user);
+  private async deleteFinishedTasksCommand(user: string): Promise<string> {
+    await this.taskService.deleteFinishedTasks(user);
     return '🗑️ Se han eliminado todas las tareas finalizadas.';
   }
 
-  private deleteTaskCommand(user: string, args: string[]): string {
-    const taskId = parseInt(args[0], 10);
-    if (isNaN(taskId))
-      return '⚠️ Debes proporcionar un número de tarea válido.';
-    return this.taskService.deleteTask(user, taskId)
+  private async deleteTaskCommand(
+    user: string,
+    args: string[],
+  ): Promise<string> {
+    const taskId = args[0];
+    if (!taskId || typeof taskId !== 'string')
+      return '⚠️ Debes proporcionar un ID de tarea válido.';
+    const deleted = await this.taskService.deleteTask(user, taskId);
+    return deleted
       ? `🗑️ Tarea #${taskId} eliminada.`
       : '⚠️ No se encontró la tarea.';
   }

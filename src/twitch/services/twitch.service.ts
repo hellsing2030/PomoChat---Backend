@@ -20,7 +20,7 @@ export class TwitchService implements OnModuleInit {
       options: { debug: true },
       connection: { reconnect: true, secure: true },
       identity: {
-        username: 'hellsing2030bot',
+        username: `${process.env.USER_BOT_NAME}`,
         password: `${process.env.TOKEN}`,
       },
       channels: channels,
@@ -30,7 +30,12 @@ export class TwitchService implements OnModuleInit {
 
     this.client.on('message', (channel, tags, message, self) => {
       if (self) return;
-      this.commandHandler.handleCommand(this.client, channel, tags, message);
+      return this.commandHandler.handleCommand(
+        this.client,
+        channel,
+        tags,
+        message,
+      );
     });
 
     this.client
