@@ -76,7 +76,9 @@ export class TaskService {
   }
 
   async deleteTask(user: string, taskId: string): Promise<boolean> {
-    const result = await this.taskModel.deleteOne({ _id: taskId, user }).exec();
+    const result = await this.taskModel
+      .deleteOne({ id_tasks: taskId, user })
+      .exec();
     return result.deletedCount > 0;
   }
 }
