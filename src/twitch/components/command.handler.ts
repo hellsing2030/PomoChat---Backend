@@ -140,8 +140,7 @@ export class CommandHandler {
     const match = text.match(taskRegex);
 
     if (match) {
-      const taskId = args[0];
-
+      const taskId = match[1];
       await this.taskService.resetPreviousTask(user);
 
       const task = await this.taskService.updateTaskStatus(

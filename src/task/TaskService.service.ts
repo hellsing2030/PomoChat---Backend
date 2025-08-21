@@ -48,7 +48,7 @@ export class TaskService {
   ): Promise<Task | null> {
     return await this.taskModel
       .findOneAndUpdate(
-        { _id: taskId, user },
+        { id_tasks: taskId, user },
         { status: newStatus },
         { new: true },
       )
