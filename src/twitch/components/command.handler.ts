@@ -176,6 +176,8 @@ export class CommandHandler {
     args: string[],
   ): Promise<string> {
     const taskId = args[0];
+    console.log({ taskId });
+
     if (!taskId || typeof taskId !== 'string')
       return '⚠️ Debes proporcionar un ID de tarea válido.';
     const deleted = await this.taskService.deleteTask(user, taskId);
