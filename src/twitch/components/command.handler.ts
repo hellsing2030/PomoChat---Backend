@@ -80,6 +80,7 @@ export class CommandHandler {
     for (const [keys, func] of commandMap.entries()) {
       if (keys.split(',').includes(command)) {
         const response = await func();
+       
         if (response) {
           client.say(channel, response);
         }
@@ -108,6 +109,7 @@ export class CommandHandler {
     const idx = Math.floor(Math.random() * symbols.length);
     return symbols[idx];
   }
+
   private async addTaskCommand(user: string, args: string[]): Promise<string> {
     const description = args.join(' ').trim();
     if (!description)

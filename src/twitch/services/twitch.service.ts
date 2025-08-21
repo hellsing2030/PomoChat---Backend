@@ -29,6 +29,7 @@ export class TwitchService implements OnModuleInit {
     this.client = new tmi.Client(options);
 
     this.client.on('message', (channel, tags, message, self) => {
+    
       if (self) return;
       return this.commandHandler.handleCommand(
         this.client,
@@ -43,7 +44,7 @@ export class TwitchService implements OnModuleInit {
       .then(
         () => console.log('Conectado a Twitch Chat'),
         this.client.on('', (channels) => {
-          console.log(channels);
+          console.log({channels});
           this.client.say(channels, 'test');
         }),
       )

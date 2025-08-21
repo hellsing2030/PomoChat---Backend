@@ -23,7 +23,6 @@ export class TaskService {
       .findOne({ user })
       .sort({ id_tasks: -1 })
       .exec();
-    console.log({ lastTask });
 
     const nextId = lastTask ? lastTask.id_tasks + 1 : 0;
 
