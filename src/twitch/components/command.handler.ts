@@ -31,7 +31,14 @@ export class CommandHandler {
         () => this.changeTaskStatusCommand(username, args),
       ],
       [
-        ['!done', '!finish', '!finalizar', '!completado', '!acabe', '!acabé'].join(),
+        [
+          '!done',
+          '!finish',
+          '!finalizar',
+          '!completado',
+          '!acabe',
+          '!acabé',
+        ].join(),
         () => this.finishTaskCommand(username),
       ],
       [
@@ -64,6 +71,11 @@ export class CommandHandler {
         () =>
           `Extendido Día 16, entonces que procede... nota del bot(este es mi proposito ?) ${this.getRandomSymbol()}`,
       ],
+      [
+        ['!cartero'].join(),
+        () =>
+          `¿Conoces Postman? Pues esto es todo lo opuesto a lo que intentan hacer con tal de cobrarte dinero: una herramienta completamente libre de cualquier pago o suscripción. Es una obra maestra creada por las manos de Danirod, un cliente HTTP gráfico excepcional. ¿Qué necesitas para instalarlo? ¿Y por qué no lo tienes aún? Es una buena pregunta. Por eso te invitamos a verlo en https://github.com/danirod/cartero.`,
+      ],
     ]);
 
     if (isMod) {
@@ -80,7 +92,7 @@ export class CommandHandler {
     for (const [keys, func] of commandMap.entries()) {
       if (keys.split(',').includes(command)) {
         const response = await func();
-       
+
         if (response) {
           client.say(channel, response);
         }
@@ -236,6 +248,8 @@ export class CommandHandler {
 🔹 **!borrartareas, !tasksdelete, !dtask, !btarea** → Elimina todas las tareas finalizadas
 🔹 **!borrartarea, !taskdelete [id]** → Elimina una tarea específica
 🔹 **!comandos, !help, !ayuda, !aiuda** → Muestra la lista de comandos
-🔹 **'!chiste', '!chistes', 'jaja', '!risitas'→ Bot de risas`;
+🔹 **'!chiste', '!chistes', 'jaja', '!risitas'→ Bot de risas
+🔹 **'!cartero'→ es una explicacion de un dato interesante 
+`;
   }
 }
