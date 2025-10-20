@@ -1,4 +1,5 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
 class CommndsState {
   @Prop({ require: true })
@@ -17,3 +18,6 @@ export class CommandsChannel extends Document {
   @Prop({ require: true })
   commands: CommndsState[];
 }
+
+export const CommandsChannelsSchema =
+  SchemaFactory.createForClass(CommandsChannel);
