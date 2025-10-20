@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TaskService } from '../TaskService.service';
 import { Task, TaskSchema } from 'src/twitch/schema/tasks.schema';
+import { TaskService } from './services/TaskService.service';
 
 @Module({
   imports: [

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TaskService } from 'src/task/TaskService.service';
+import { TaskService } from 'src/task/services/TaskService.service';
 import { Client } from 'tmi.js';
 
 @Injectable()
@@ -12,7 +12,10 @@ export class CommandHandler {
     const args = message.split(' ');
     const command = args.shift()?.toLowerCase();
     const username = tags['display-name'];
-    const isMod = tags.mod || tags.badges?.broadcaster;
+    const isMod =
+      tags.mod ||
+      tags.badges?.broadcaster ||
+      tags.username === process.env.USER_BOSS_NAME;
 
     if (!this.botEnabled && command !== '!onbot') return;
 
@@ -83,6 +86,7 @@ export class CommandHandler {
         this.botEnabled = true;
         return '✅ Bot encendido.';
       });
+
       commandMap.set('!offbot', () => {
         this.botEnabled = false;
         return '🛑 Bot apagado.';
