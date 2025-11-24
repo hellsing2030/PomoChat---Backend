@@ -27,8 +27,10 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^6.0.0",
     "dotenv": "^16.4.7",
-    "mongoose": "^8.13.2",
+    "express": "^5.1.0",
     "googleapis": "^153.0.0",
+    "mongoose": "^8.13.2",
+    "open": "^10.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "tmi.js": "^1.8.5"

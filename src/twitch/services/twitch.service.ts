@@ -49,4 +49,23 @@ export class TwitchService implements OnModuleInit {
       )
       .catch((error) => console.error('Error al conectar con Twitch:', error));
   }
+  /*
+  Uso: API para enviar mensajes al canal (llamable desde otros módulos)
+  - channelName: 'canal' o '#canal' (si no tiene '#', se agrega)
+  - message: texto a enviar
+  sendMessageToChannel(channelName: string, message: string): void {
+    if (!this.client) {
+      console.error('Twitch client no está conectado');
+      return;
+    }
+
+    const channel = channelName.startsWith('#')
+      ? channelName
+      : `#${channelName}`;
+
+    this.client.say(channel, message).catch((error) => {
+      console.error(`Error enviando mensaje a ${channel}:`, error.message);
+    });
+  }
+*/
 }

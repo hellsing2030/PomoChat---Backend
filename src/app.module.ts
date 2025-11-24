@@ -3,6 +3,7 @@ import { TwitchModule } from './twitch/twitch.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CustomCommandsChanelsModule } from './custom-commands-chanels/custom-commands-chanels.module';
+import { YoutubeModule } from './youtube/youtube.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { CustomCommandsChanelsModule } from './custom-commands-chanels/custom-co
     MongooseModule.forRoot(process.env.MONGO_URL),
     TwitchModule,
     CustomCommandsChanelsModule,
+    YoutubeModule,
   ],
   controllers: [],
   providers: [],

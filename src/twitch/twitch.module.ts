@@ -6,5 +6,6 @@ import { TasksModule } from 'src/task/task.module';
 @Module({
   imports: [TasksModule],
   providers: [TwitchService, CommandHandler],
+  exports: [TwitchService],
 })
 export class TwitchModule {}
