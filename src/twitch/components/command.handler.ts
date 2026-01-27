@@ -31,7 +31,7 @@ export class CommandHandler {
         () => this.changeTaskStatusCommand(username, args),
       ],
       [
-        ['!done', '!finish', '!finalizar', '!completado', '!acabe'].join(),
+        ['!done', '!finish', '!finalizar', '!completado', '!acabe', '!acabé'].join(),
         () => this.finishTaskCommand(username),
       ],
       [
