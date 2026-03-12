@@ -9,7 +9,7 @@ export class CommandHandler {
   constructor(private readonly taskService: TaskService) {}
 
   async handleCommand(client: Client, channel: string, tags, message: string) {
-    const args = message.split(' ');
+    const args = message.split(' '); // -->"se entiende pero parece chino xd" -> ["se", "entiende",...] Hola-> hola
     const command = args.shift()?.toLowerCase();
     const username = tags['display-name'];
     const isMod = tags.mod || tags.badges?.broadcaster;
@@ -149,7 +149,7 @@ export class CommandHandler {
     user: string,
     args: string[],
   ): Promise<string> {
-    const text = args.join(' ').trim();
+    const text = args.join(' ').trim();// -->"se entiende pero parece chino xd" <- ["se", "entiende",...] 
     const taskRegex = /^tarea(\d+)$/i;
     const match = text.match(taskRegex);
 
